@@ -1,0 +1,13 @@
+{
+  "name": "awsstatic",
+  "version": "1.0.0",
+  "description": "Tool for deploying static websites to AWS, automatically creating an S3 Bucket and Cloudfront deployment",
+  "main": "index.js",
+  "author": "vltmn <melkerveltman@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.447.0",
+    "mime-types": "^2.1.24",
+    "yargs": "^13.2.2"
+  }
+}
