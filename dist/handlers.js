@@ -1,0 +1,28 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const cloudformation_1 = require("./cloudformation");
+const s3_1 = require("./s3");
+exports.deployHandler = (name, path, region, stage) => __awaiter(this, void 0, void 0, function* () {
+    const cfName = `${name}-${stage}`;
+    try {
+        const returnVal = yield cloudformation_1.updateCreateCloudFormation(cfName, region);
+        yield s3_1.copyFolderToS3(returnVal.bucket, path, region);
+        console.log('Bucket name: ', returnVal.bucket);
+        console.log('Cloudfront domain: ', returnVal.cloudfront);
+    }
+    catch (e) {
+        console.log(e);
+    }
+    console.log('DONE');
+});
+exports.removeHandler = (name, region, stage) => __awaiter(this, void 0, void 0, function* () {
+});
+//# sourceMappingURL=handlers.js.map

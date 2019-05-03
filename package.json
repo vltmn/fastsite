@@ -14,12 +14,16 @@
     "@types/mime-types": "^2.1.0",
     "@types/node": "^11.13.9",
     "@types/yargs": "^13.0.0",
+    "copyfiles": "^2.1.0",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
     "typescript": "^3.4.5"
   },
   "scripts": {
     "handler": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc && copyfiles -u 1 src/cloudformation.yml dist/"
+  },
+  "bin": {
+    "awsstatic": "dist/index.js"
   }
 }
