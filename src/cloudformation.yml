@@ -16,6 +16,15 @@ Resources:
             OriginProtocolPolicy: http-only
         DefaultRootObject: index.html
         PriceClass: PriceClass_100
+        CacheBehaviors:
+          - DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            PathPattern: index.html
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: allow-all
+            ForwardedValues:
+              QueryString: 'false'
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ForwardedValues:
