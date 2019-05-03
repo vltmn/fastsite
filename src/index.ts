@@ -1,5 +1,5 @@
-const yargs = require('yargs');
-const handlers = require('./src/handlers');
+import yargs from 'yargs';
+import { deployHandler, removeHandler } from './handlers';
 
 yargs.command(['deploy', '$0'], 'Deploy a static directory to AWS', {
         name: {
@@ -33,7 +33,7 @@ yargs.command(['deploy', '$0'], 'Deploy a static directory to AWS', {
             nargs: 1
         }
     }, argv => {
-        handlers.deploy(argv.name, argv.path, argv.region, argv.stage);
+        deployHandler(argv.name, argv.path, argv.region, argv.stage);
     })
     .help()
     .command('remove', 'Remove a project deployed using this from AWS, removes all files from S3 and removes all created resources.', {
@@ -60,7 +60,7 @@ yargs.command(['deploy', '$0'], 'Deploy a static directory to AWS', {
             nargs: 1
         }
     }, argv => {
-        handlers.remove(argv.name, argv.region, argv.stage);
+        removeHandler(argv.name, argv.region, argv.stage);
     })
     .help()
     .version()
