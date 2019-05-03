@@ -33,7 +33,8 @@ const waitForCloudFormation = async (stackName: string): Promise<void> => {
     if (!resp) throw new Error('Resp was undefined');
     while (
         resp.StackStatus == 'CREATE_IN_PROGRESS' ||
-        resp.StackStatus == 'UPDATE_IN_PROGRESS'
+        resp.StackStatus == 'UPDATE_IN_PROGRESS' ||
+        resp.StackStatus == 'DELETE_IN_PROGRESS'
     ) {
         await sleep(500);
         resp = await checkCloudFormation(stackName);
@@ -52,18 +53,33 @@ const checkCloudFormation = (stackName: string) =>
     }).promise()
     .then(s => s.Stacks && s.Stacks[0]);
 
-export const updateCreateCloudFormation = async (name: string, region: string) => {
+const removeStack = (stackName: string) =>
+    cloudFormation.deleteStack({
+        StackName: stackName
+    }).promise();
+
+
+export const removeCloudFormation = async (name: string, region: string): Promise<void> => {
     aws.config.update({
         region: region
     });
     cloudFormation = new aws.CloudFormation();
     const stackName = name;
-    console.debug('STACK NAME: ', stackName);
+    const exists = await stackExists(stackName);
+    if (!exists) return;
+    await removeStack(stackName);
+    await waitForCloudFormation(stackName);
+};
+
+export const updateCreateCloudFormation = async (name: string, region: string): Promise<{bucket: string, cloudfront: string}> => {
+    aws.config.update({
+        region: region
+    });
+    cloudFormation = new aws.CloudFormation();
+    const stackName = name;
     const params = buildParams(stackName);
     const exists = await stackExists(stackName);
-    console.debug('STACK EXISTS: ', exists);
     if (exists) {
-        console.debug('UPDATING STACK');
         const currentTemplate = await getTemplate(stackName);
         if (!currentTemplate) throw new Error('No template found');
         if (currentTemplate != template) {
@@ -80,8 +96,15 @@ export const updateCreateCloudFormation = async (name: string, region: string) =
         throw new Error(resp);
     }
     const bucketName = getOutputValueFromStack(resp, 'S3BucketName');
-    return bucketName;
+    const distName = getOutputValueFromStack(resp, 'WebsiteURL');
+    if (!bucketName || ! distName) {
+        throw new Error('Bad output values');
+    }
+    return {
+        bucket: bucketName,
+        cloudfront: distName
+    };
 };
 
-const getOutputValueFromStack = (stack: Stack, output: string) =>
-    stack.Outputs && stack.Outputs.filter(o => o.OutputKey === output)[0];
+const getOutputValueFromStack = (stack: Stack, output: string): string | undefined =>
+    stack.Outputs && stack.Outputs.filter(o => o.OutputKey === output)[0].OutputValue;
