@@ -1,11 +1,13 @@
-import { updateCreateCloudFormation } from './cloudformation';
-const s3 = require('./s3');
+import { updateCreateCloudFormation, removeCloudFormation } from './cloudformation';
+import { copyFolderToS3, removeAllFilesFromBucket } from './s3';
 
 export const deployHandler = async (name: string, path: string, region: string, stage: string) => {
     const cfName = `${name}-${stage}`;
     try {
-        const bucketName = await updateCreateCloudFormation(cfName, region);
-        console.log('BUCKET NAME: ', bucketName);
+        const returnVal = await updateCreateCloudFormation(cfName, region);
+        await copyFolderToS3(returnVal.bucket, path, region);
+        console.log('Bucket name: ', returnVal.bucket);
+        console.log('Cloudfront domain: ', returnVal.cloudfront);
     } catch (e) {
         console.log(e);
     }
