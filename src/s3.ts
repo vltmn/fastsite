@@ -64,7 +64,7 @@ const removeOneBatchFromBucket = async (bucket: string): Promise<number> => {
     const resp = await s3.listObjectsV2({
         Bucket: bucket
     }).promise();
-    if (!resp.Contents) return 0;
+    if (!resp.Contents || resp.Contents.length == 0) return 0;
     const keys: string[] = [];
     for (const entry of resp.Contents) {
         if (!entry.Key) continue;
@@ -80,7 +80,11 @@ const removeOneBatchFromBucket = async (bucket: string): Promise<number> => {
     return keys.length;
 };
 
-export const removeAllFilesFromBucket = async (bucketName: string) => {
+export const removeAllFilesFromBucket = async (bucketName: string, region: string) => {
+    aws.config.update({
+        region
+    });
+    s3 = new aws.S3();
     let contentLeft = true;
     while (contentLeft) {
         const removed = await removeOneBatchFromBucket(bucketName);

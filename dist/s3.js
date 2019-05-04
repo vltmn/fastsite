@@ -66,7 +66,7 @@ const removeOneBatchFromBucket = (bucket) => __awaiter(this, void 0, void 0, fun
     const resp = yield s3.listObjectsV2({
         Bucket: bucket
     }).promise();
-    if (!resp.Contents)
+    if (!resp.Contents || resp.Contents.length == 0)
         return 0;
     const keys = [];
     for (const entry of resp.Contents) {
@@ -82,7 +82,11 @@ const removeOneBatchFromBucket = (bucket) => __awaiter(this, void 0, void 0, fun
     }).promise();
     return keys.length;
 });
-exports.removeAllFilesFromBucket = (bucketName) => __awaiter(this, void 0, void 0, function* () {
+exports.removeAllFilesFromBucket = (bucketName, region) => __awaiter(this, void 0, void 0, function* () {
+    aws_sdk_1.default.config.update({
+        region
+    });
+    s3 = new aws_sdk_1.default.S3();
     let contentLeft = true;
     while (contentLeft) {
         const removed = yield removeOneBatchFromBucket(bucketName);

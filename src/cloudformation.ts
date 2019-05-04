@@ -53,11 +53,6 @@ const checkCloudFormation = (stackName: string) =>
     }).promise()
     .then(s => s.Stacks && s.Stacks[0]);
 
-const removeStack = (stackName: string) =>
-    cloudFormation.deleteStack({
-        StackName: stackName
-    }).promise();
-
 
 export const removeCloudFormation = async (name: string, region: string): Promise<void> => {
     aws.config.update({
@@ -66,9 +61,24 @@ export const removeCloudFormation = async (name: string, region: string): Promis
     cloudFormation = new aws.CloudFormation();
     const stackName = name;
     const exists = await stackExists(stackName);
-    if (!exists) return;
-    await removeStack(stackName);
-    await waitForCloudFormation(stackName);
+    await deleteStack(stackName);
+};
+
+export const getBucketName = async (name: string, region: string): Promise<string> => {
+    aws.config.update({
+        region: region
+    });
+    cloudFormation = new aws.CloudFormation();
+    const stackName = name;
+    const exists = await stackExists(stackName);
+    if (!exists) {
+        throw new Error('The deployment supplied does not exist.');
+    }
+    const resp = await checkCloudFormation(stackName);
+    if (!resp) throw new Error('Undefined');
+    const bucketName = getOutputValueFromStack(resp, 'S3BucketName');
+    if (!bucketName) throw new Error('Undefined');
+    return bucketName;
 };
 
 export const updateCreateCloudFormation = async (name: string, region: string): Promise<{bucket: string, cloudfront: string}> => {

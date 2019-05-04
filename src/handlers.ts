@@ -1,4 +1,4 @@
-import { updateCreateCloudFormation, removeCloudFormation } from './cloudformation';
+import { updateCreateCloudFormation, removeCloudFormation, getBucketName } from './cloudformation';
 import { copyFolderToS3, removeAllFilesFromBucket } from './s3';
 
 export const deployHandler = async (name: string, path: string, region: string, stage: string) => {
@@ -11,8 +11,17 @@ export const deployHandler = async (name: string, path: string, region: string, 
     } catch (e) {
         console.log(e);
     }
-    console.log('DONE');
 };
 
 export const removeHandler = async (name: string, region: string, stage: string) => {
+    const cfName = `${name}-${stage}`;
+    try {
+        const bucketName = await getBucketName(cfName, region);
+        await removeAllFilesFromBucket(bucketName, region);
+        console.log('Removing cloudformation stack.');
+        await removeCloudFormation(cfName, region);
+        console.log('The removal process of the cloudformation stack has begun, view the status in the web console.');
+    } catch (e) {
+        console.log(e);
+    }
 };

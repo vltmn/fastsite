@@ -48,9 +48,6 @@ const checkCloudFormation = (stackName) => cloudFormation.describeStacks({
     StackName: stackName
 }).promise()
     .then(s => s.Stacks && s.Stacks[0]);
-const removeStack = (stackName) => cloudFormation.deleteStack({
-    StackName: stackName
-}).promise();
 exports.removeCloudFormation = (name, region) => __awaiter(this, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region: region
@@ -58,10 +55,25 @@ exports.removeCloudFormation = (name, region) => __awaiter(this, void 0, void 0,
     cloudFormation = new aws_sdk_1.default.CloudFormation();
     const stackName = name;
     const exists = yield stackExists(stackName);
-    if (!exists)
-        return;
-    yield removeStack(stackName);
-    yield waitForCloudFormation(stackName);
+    yield deleteStack(stackName);
+});
+exports.getBucketName = (name, region) => __awaiter(this, void 0, void 0, function* () {
+    aws_sdk_1.default.config.update({
+        region: region
+    });
+    cloudFormation = new aws_sdk_1.default.CloudFormation();
+    const stackName = name;
+    const exists = yield stackExists(stackName);
+    if (!exists) {
+        throw new Error('The deployment supplied does not exist.');
+    }
+    const resp = yield checkCloudFormation(stackName);
+    if (!resp)
+        throw new Error('Undefined');
+    const bucketName = getOutputValueFromStack(resp, 'S3BucketName');
+    if (!bucketName)
+        throw new Error('Undefined');
+    return bucketName;
 });
 exports.updateCreateCloudFormation = (name, region) => __awaiter(this, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({

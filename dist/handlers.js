@@ -21,8 +21,18 @@ exports.deployHandler = (name, path, region, stage) => __awaiter(this, void 0, v
     catch (e) {
         console.log(e);
     }
-    console.log('DONE');
 });
 exports.removeHandler = (name, region, stage) => __awaiter(this, void 0, void 0, function* () {
+    const cfName = `${name}-${stage}`;
+    try {
+        const bucketName = yield cloudformation_1.getBucketName(cfName, region);
+        yield s3_1.removeAllFilesFromBucket(bucketName, region);
+        console.log('Removing cloudformation stack.');
+        yield cloudformation_1.removeCloudFormation(cfName, region);
+        console.log('The removal process of the cloudformation stack has begun, view the status in the web console.');
+    }
+    catch (e) {
+        console.log(e);
+    }
 });
 //# sourceMappingURL=handlers.js.map
