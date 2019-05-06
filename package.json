@@ -1,5 +1,5 @@
 {
-  "name": "awsstatic",
+  "name": "siteup",
   "version": "1.0.0",
   "description": "Tool for deploying static websites to AWS, automatically creating an S3 Bucket and Cloudfront deployment",
   "main": "index.js",
@@ -24,6 +24,6 @@
     "build": "tsc && copyfiles -u 1 src/cloudformation.yml dist/"
   },
   "bin": {
-    "awsstatic": "dist/index.js"
+    "siteup": "dist/index.js"
   }
 }
