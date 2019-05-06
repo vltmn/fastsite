@@ -1,5 +1,5 @@
 {
-  "name": "siteup",
+  "name": "fastsite",
   "version": "1.0.0",
   "description": "Tool for deploying static websites to AWS, automatically creating an S3 Bucket and Cloudfront deployment",
   "main": "index.js",
@@ -24,7 +24,7 @@
     "build": "tsc && copyfiles -u 1 src/cloudformation.yml dist/"
   },
   "bin": {
-    "siteup": "dist/index.js"
+    "fastsite": "dist/index.js"
   },
   "keywords": [
     "website",
@@ -38,6 +38,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vltmn/siteup.git"
+    "url": "git+https://github.com/vltmn/fastsite.git"
   } 
 }

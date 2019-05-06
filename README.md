@@ -1,4 +1,4 @@
-# SiteUp
+# FastSite
 
 ### :rocket: Deploy your static websites in minutes! :rocket:
 
@@ -7,15 +7,15 @@ Combining the usage of several AWS tools, your website is up & blazing fast in m
 ## Usage
 
 ### 1. Installation
-Install SiteUp using your package manager.
+Install fastsite using your package manager.
 
 For npm users
 ```bash
-npm install -g siteup
+npm install -g fastsite
 ```
 For yarn users
 ```bash
-yarn global add siteup
+yarn global add fastsite
 ```
 ### 2. Set up AWS credentials
 Using either
@@ -55,9 +55,9 @@ Using either
 
 In a terminal, do the following to create a new deployment or update an existing
 ```bash
-siteup deploy --name [PROJECT_NAME] --path [PATH_TO_STATIC_FILES]
+fastsite deploy --name [PROJECT_NAME] --path [PATH_TO_STATIC_FILES]
 ```
-(to see more options use `siteup deploy --help`)
+(to see more options use `fastsite deploy --help`)
 
 ***NOTE*** 
 The first deployment takes about 15 minutes for AWS to get everything ready, don't worry!
@@ -65,9 +65,9 @@ The first deployment takes about 15 minutes for AWS to get everything ready, don
 ### 4. Remove an existing deployment
 In a terminal, do the following to remove an existing deployment
 ```bash
-siteup remove --name [PROJECT_NAME]
+fastsite remove --name [PROJECT_NAME]
 ```
-(to see more options use `siteup remove --help`)
+(to see more options use `fastsite remove --help`)
 
 ***NOTE*** 
 The deployment is not completely removed after the command is done, but it will be in about 20 minutes.
