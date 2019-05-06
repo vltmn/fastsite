@@ -25,5 +25,19 @@
   },
   "bin": {
     "siteup": "dist/index.js"
-  }
+  },
+  "keywords": [
+    "website",
+    "static",
+    "deploy",
+    "AWS",
+    "deployment",
+    "cloudfront",
+    "cloudformation",
+    "s3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltmn/siteup.git"
+  } 
 }
