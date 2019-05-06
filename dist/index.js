@@ -6,7 +6,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const yargs_1 = __importDefault(require("yargs"));
 const handlers_1 = require("./handlers");
-yargs_1.default.command(['deploy', '$0'], 'Deploy a static directory to AWS', {
+yargs_1.default.command(['deploy'], 'Deploy a static directory to AWS', {
     name: {
         alias: 'n',
         describe: 'Name of the project to be created in AWS',

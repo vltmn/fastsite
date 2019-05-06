@@ -3,7 +3,7 @@
 import yargs from 'yargs';
 import { deployHandler, removeHandler } from './handlers';
 
-yargs.command(['deploy', '$0'], 'Deploy a static directory to AWS', {
+yargs.command(['deploy'], 'Deploy a static directory to AWS', {
         name: {
             alias: 'n',
             describe: 'Name of the project to be created in AWS',
