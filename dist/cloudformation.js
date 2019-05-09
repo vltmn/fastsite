@@ -92,7 +92,7 @@ exports.updateCreateCloudFormation = (name, region) => __awaiter(this, void 0, v
         }
     }
     else {
-        console.debug('CREATING STACK');
+        console.debug('Creating the cloudformation stack, this might take up to 15 minutes...');
         yield createStack(params);
     }
     yield waitForCloudFormation(stackName);

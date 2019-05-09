@@ -96,7 +96,7 @@ export const updateCreateCloudFormation = async (name: string, region: string): 
             await updateStack(params);
         }
     } else {
-        console.debug('CREATING STACK');
+        console.debug('Creating the cloudformation stack, this might take up to 15 minutes...');
         await createStack(params);
     }
 
