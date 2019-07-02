@@ -30,6 +30,12 @@ Resources:
           ForwardedValues:
             QueryString: 'false'
           ViewerProtocolPolicy: allow-all
+{{#defaultIndex}}
+        CustomErrorResponses:
+          - ErrorCode: '404'
+            ResponsePagePath: "/index.html"
+            ResponseCode: '200'
+{{/defaultIndex}}
 
   WebBucket:
     Type: AWS::S3::Bucket

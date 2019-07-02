@@ -27,6 +27,11 @@ yargs.command(['deploy'], 'Deploy a static directory to AWS', {
             type: 'string',
             nargs: 1
         },
+        defaultIndex: {
+            describe: 'Use index.html as default page if a corresponding html page is not found',
+            default: false,
+            type: 'boolean'
+        },
         stage: {
             describe: 'Stage of the deployment',
             default: 'dev',
@@ -35,7 +40,7 @@ yargs.command(['deploy'], 'Deploy a static directory to AWS', {
             nargs: 1
         }
     }, argv => {
-        deployHandler(argv.name, argv.path, argv.region, argv.stage);
+        deployHandler(argv.name, argv.path, argv.region, argv.defaultIndex, argv.stage);
     })
     .help()
     .command('remove', 'Remove a project deployed using this from AWS, removes all files from S3 and removes all created resources.', {

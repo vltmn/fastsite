@@ -1,18 +1,17 @@
 import { sleep } from './util';
 import aws from 'aws-sdk';
 import fs from 'fs';
+import { getTemplate as getTemplateStr } from './template'
 import path from 'path';
 import { Stack } from 'aws-sdk/clients/cloudformation';
 
 let cloudFormation: aws.CloudFormation;
-const CLOUDFORMATION_PATH = path.join(__dirname, 'cloudformation.yml');
-const template: string = fs.readFileSync(CLOUDFORMATION_PATH, 'utf8');
 
 interface BaseParams {
     StackName: string;
     TemplateBody: string;
 }
-const buildParams = (stackName: string): BaseParams => ({
+const buildParams = (stackName: string, template: string): BaseParams => ({
     StackName: stackName,
     TemplateBody: template
 });
@@ -81,13 +80,14 @@ export const getBucketName = async (name: string, region: string): Promise<strin
     return bucketName;
 };
 
-export const updateCreateCloudFormation = async (name: string, region: string): Promise<{bucket: string, cloudfront: string}> => {
+export const updateCreateCloudFormation = async (name: string, useIndexAsDefault: boolean, region: string): Promise<{bucket: string, cloudfront: string}> => {
     aws.config.update({
         region: region
     });
     cloudFormation = new aws.CloudFormation();
     const stackName = name;
-    const params = buildParams(stackName);
+    const template = getTemplateStr({defaultIndex: useIndexAsDefault});
+    const params = buildParams(stackName, template);
     const exists = await stackExists(stackName);
     if (exists) {
         const currentTemplate = await getTemplate(stackName);

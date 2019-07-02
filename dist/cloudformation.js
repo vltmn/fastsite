@@ -13,12 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("./util");
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+const template_1 = require("./template");
 let cloudFormation;
-const CLOUDFORMATION_PATH = path_1.default.join(__dirname, 'cloudformation.yml');
-const template = fs_1.default.readFileSync(CLOUDFORMATION_PATH, 'utf8');
-const buildParams = (stackName) => ({
+const buildParams = (stackName, template) => ({
     StackName: stackName,
     TemplateBody: template
 });
@@ -75,13 +72,14 @@ exports.getBucketName = (name, region) => __awaiter(this, void 0, void 0, functi
         throw new Error('Undefined');
     return bucketName;
 });
-exports.updateCreateCloudFormation = (name, region) => __awaiter(this, void 0, void 0, function* () {
+exports.updateCreateCloudFormation = (name, useIndexAsDefault, region) => __awaiter(this, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region: region
     });
     cloudFormation = new aws_sdk_1.default.CloudFormation();
     const stackName = name;
-    const params = buildParams(stackName);
+    const template = template_1.getTemplate({ defaultIndex: useIndexAsDefault });
+    const params = buildParams(stackName, template);
     const exists = yield stackExists(stackName);
     if (exists) {
         const currentTemplate = yield getTemplate(stackName);
