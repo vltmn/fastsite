@@ -39,7 +39,9 @@ const waitForCloudFormation = (stackName) => __awaiter(this, void 0, void 0, fun
     }
 });
 const stackExists = (stackName) => cloudFormation.listStacks({}).promise()
-    .then(stacks => stacks.StackSummaries && stacks.StackSummaries.filter(ss => ss.StackName === stackName).length > 0)
+    .then(stacks => stacks.StackSummaries && stacks.StackSummaries
+    .filter(ss => ss.StackName === stackName)
+    .filter(ss => ss.StackStatus !== 'DELETE_COMPLETE').length > 0)
     .then(res => !!res);
 const checkCloudFormation = (stackName) => cloudFormation.describeStacks({
     StackName: stackName

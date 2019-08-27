@@ -1,6 +1,6 @@
 {
   "name": "fastsite",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Tool for deploying static websites to AWS, automatically creating an S3 Bucket and Cloudfront deployment",
   "main": "index.js",
   "author": "vltmn <melkerveltman@gmail.com>",
