@@ -1,9 +1,23 @@
 import { updateCreateCloudFormation, removeCloudFormation, getBucketName } from './cloudformation';
 import { copyFolderToS3, removeAllFilesFromBucket } from './s3';
+import fs from 'fs';
+
+const assurePathExists = (path: string): boolean => {
+    try {
+        fs.readdirSync(path);
+        return true;
+    } catch (ex) {
+    }
+    return false;
+};
 
 export const deployHandler = async (name: string, path: string, region: string, useIndexAsDefault: boolean, stage: string) => {
     const cfName = `${name}-${stage}`;
     try {
+        const pathValid = assurePathExists(path);
+        if (!pathValid) {
+            throw new Error('The path supplied does not exist or is not readable');
+        }
         const returnVal = await updateCreateCloudFormation(cfName, useIndexAsDefault, region);
         await copyFolderToS3(returnVal.bucket, path, region);
         console.log('Bucket name: ', returnVal.bucket);

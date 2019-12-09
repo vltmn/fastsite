@@ -7,12 +7,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const cloudformation_1 = require("./cloudformation");
 const s3_1 = require("./s3");
+const fs_1 = __importDefault(require("fs"));
+const assurePathExists = (path) => {
+    try {
+        fs_1.default.readdirSync(path);
+        return true;
+    }
+    catch (ex) {
+    }
+    return false;
+};
 exports.deployHandler = (name, path, region, useIndexAsDefault, stage) => __awaiter(this, void 0, void 0, function* () {
     const cfName = `${name}-${stage}`;
     try {
+        const pathValid = assurePathExists(path);
+        if (!pathValid) {
+            throw new Error('The path supplied does not exist or is not readable');
+        }
         const returnVal = yield cloudformation_1.updateCreateCloudFormation(cfName, useIndexAsDefault, region);
         yield s3_1.copyFolderToS3(returnVal.bucket, path, region);
         console.log('Bucket name: ', returnVal.bucket);
