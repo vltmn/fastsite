@@ -22,14 +22,14 @@ Resources:
             MinTTL: 0
             PathPattern: index.html
             TargetOriginId: S3Origin
-            ViewerProtocolPolicy: allow-all
+            ViewerProtocolPolicy: redirect-to-https
             ForwardedValues:
               QueryString: 'false'
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ForwardedValues:
             QueryString: 'false'
-          ViewerProtocolPolicy: allow-all
+          ViewerProtocolPolicy: redirect-to-https
 {{#defaultIndex}}
         CustomErrorResponses:
           - ErrorCode: '404'
