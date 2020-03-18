@@ -72,6 +72,24 @@ yargs_1.default.command(['deploy'], 'Deploy a static directory to AWS', {
 }, argv => {
     handlers_1.removeHandler(argv.name, argv.region, argv.stage);
 })
+    .command('info', 'Get info about current deployments', {
+    name: {
+        alias: 'n',
+        describe: 'Name of the project to get deployments for',
+        requiresArg: true,
+        type: 'string',
+        nargs: 1
+    },
+    region: {
+        describe: 'AWS region to get deployments from from',
+        default: 'eu-west-1',
+        requiresArg: true,
+        type: 'string',
+        nargs: 1
+    }
+}, argv => {
+    handlers_1.infoHandler(argv.region, argv.name);
+})
     .help()
     .version()
     .strict().argv;

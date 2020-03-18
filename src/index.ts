@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import yargs from 'yargs';
-import { deployHandler, removeHandler } from './handlers';
+import { deployHandler, removeHandler, infoHandler } from './handlers';
 
 yargs.command(['deploy'], 'Deploy a static directory to AWS', {
         name: {
@@ -68,6 +68,24 @@ yargs.command(['deploy'], 'Deploy a static directory to AWS', {
         }
     }, argv => {
         removeHandler(argv.name, argv.region, argv.stage);
+    })
+    .command('info', 'Get info about current deployments', {
+        name: {
+            alias: 'n',
+            describe: 'Name of the project to get deployments for',
+            requiresArg: true,
+            type: 'string',
+            nargs: 1
+        },
+        region: {
+            describe: 'AWS region to get deployments from from',
+            default: 'eu-west-1',
+            requiresArg: true,
+            type: 'string',
+            nargs: 1
+        }
+    }, argv => {
+        infoHandler(argv.region, argv.name);
     })
     .help()
     .version()
