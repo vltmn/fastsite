@@ -20,8 +20,7 @@ const assurePathExists = (path) => {
         fs_1.default.readdirSync(path);
         return true;
     }
-    catch (ex) {
-    }
+    catch (ex) { }
     return false;
 };
 exports.deployHandler = (name, path, region, useIndexAsDefault, stage) => __awaiter(void 0, void 0, void 0, function* () {

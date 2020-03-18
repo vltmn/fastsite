@@ -16,6 +16,7 @@ const util_1 = require("./util");
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const template_1 = require("./template");
 let cloudFormation;
+exports.buildStackName = (name, stage) => `${name}-${stage}`;
 const buildParams = (name, stage, template) => ({
     StackName: exports.buildStackName(name, stage),
     TemplateBody: template,
@@ -34,19 +35,33 @@ const buildParams = (name, stage, template) => ({
         }
     ]
 });
-exports.buildStackName = (name, stage) => `${name}-${stage}`;
 const createStack = (params) => cloudFormation.createStack(params).promise();
 const updateStack = (params) => cloudFormation.updateStack(params).promise();
-const deleteStack = (stackName) => cloudFormation.deleteStack(({ StackName: stackName })).promise().then(r => { return; });
-const getTemplate = (stackName) => cloudFormation.getTemplate({ StackName: stackName })
-    .promise().then(r => r.TemplateBody);
-const getTags = (stackName) => cloudFormation.describeStacks({ StackName: stackName })
-    .promise().then(r => {
+const deleteStack = (stackName) => cloudFormation
+    .deleteStack({ StackName: stackName })
+    .promise()
+    .then(() => {
+    return;
+});
+const getTemplate = (stackName) => cloudFormation
+    .getTemplate({ StackName: stackName })
+    .promise()
+    .then(r => r.TemplateBody);
+const getTags = (stackName) => cloudFormation
+    .describeStacks({ StackName: stackName })
+    .promise()
+    .then(r => {
     if (!r.Stacks || r.$response.error) {
         throw new Error('Could not get stack for getting tags');
     }
     return r.Stacks[0].Tags;
 });
+const checkCloudFormation = (stackName) => cloudFormation
+    .describeStacks({
+    StackName: stackName
+})
+    .promise()
+    .then(s => s.Stacks && s.Stacks[0]);
 const waitForCloudFormation = (stackName) => __awaiter(void 0, void 0, void 0, function* () {
     let resp;
     resp = yield checkCloudFormation(stackName);
@@ -61,24 +76,22 @@ const waitForCloudFormation = (stackName) => __awaiter(void 0, void 0, void 0, f
             throw new Error('Resp was undefined');
     }
 });
-const stackExists = (stackName) => cloudFormation.listStacks({}).promise()
-    .then(stacks => stacks.StackSummaries && stacks.StackSummaries
-    .filter(ss => ss.StackName === stackName)
-    .filter(ss => ss.StackStatus !== 'DELETE_COMPLETE').length > 0)
+const stackExists = (stackName) => cloudFormation
+    .listStacks({})
+    .promise()
+    .then(stacks => stacks.StackSummaries &&
+    stacks.StackSummaries.filter(ss => ss.StackName === stackName).filter(ss => ss.StackStatus !== 'DELETE_COMPLETE').length > 0)
     .then(res => !!res);
-const checkCloudFormation = (stackName) => cloudFormation.describeStacks({
-    StackName: stackName
-}).promise()
-    .then(s => s.Stacks && s.Stacks[0]);
 exports.removeCloudFormation = (name, stage, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region: region
     });
     cloudFormation = new aws_sdk_1.default.CloudFormation();
     const stackName = exports.buildStackName(name, stage);
-    const exists = yield stackExists(stackName);
+    yield stackExists(stackName);
     yield deleteStack(stackName);
 });
+const getOutputValueFromStack = (stack, output) => stack.Outputs && stack.Outputs.filter(o => o.OutputKey === output)[0].OutputValue;
 exports.getBucketName = (name, stage, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region: region
@@ -112,6 +125,7 @@ exports.updateCreateCloudFormation = (name, stage, useIndexAsDefault, region) =>
         if (!currentTemplate)
             throw new Error('No template found');
         if (currentTemplate != template || currentTags != params.Tags) {
+            console.log('Updating stack...');
             yield updateStack(params);
         }
     }
@@ -144,10 +158,9 @@ exports.getDeployments = (region, name) => __awaiter(void 0, void 0, void 0, fun
     if (response.$response.error) {
         throw new Error('Error getting stacks ' + response.$response.error);
     }
-    return ((_a = response.Stacks) === null || _a === void 0 ? void 0 : _a.filter(stack => { var _a; return (_a = stack.Tags) === null || _a === void 0 ? void 0 : _a.some(tag => tag.Key === 'fastsite' && tag.Value === 'true'); }).filter(stack => { var _a; return name ? (_a = stack.Tags) === null || _a === void 0 ? void 0 : _a.some(tag => tag.Key === 'fastsite-name' && tag.Value === name) : true; }).map(stack => ({
+    return (((_a = response.Stacks) === null || _a === void 0 ? void 0 : _a.filter(stack => { var _a; return (_a = stack.Tags) === null || _a === void 0 ? void 0 : _a.some(tag => tag.Key === 'fastsite' && tag.Value === 'true'); }).filter(stack => { var _a; return (name ? (_a = stack.Tags) === null || _a === void 0 ? void 0 : _a.some(tag => tag.Key === 'fastsite-name' && tag.Value === name) : true); }).map(stack => ({
         name: stack.StackName,
         distributionUrl: getOutputValueFromStack(stack, 'WebsiteURL') || ''
-    }))) || [];
+    }))) || []);
 });
-const getOutputValueFromStack = (stack, output) => stack.Outputs && stack.Outputs.filter(o => o.OutputKey === output)[0].OutputValue;
 //# sourceMappingURL=cloudformation.js.map
