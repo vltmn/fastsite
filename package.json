@@ -17,12 +17,19 @@
     "@types/mustache": "^0.8.32",
     "@types/node": "^11.13.9",
     "@types/yargs": "^13.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
     "copyfiles": "^2.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1",
     "ts-node": "^8.6.2",
     "tslint": "^6.1.0",
     "typescript": "^3.8.3"
   },
   "scripts": {
+    "lint": "eslint src/*",
     "handler": "ts-node src/index.ts",
     "build": "tsc && copyfiles -u 1 src/cloudformation.yml.mustache dist/"
   },

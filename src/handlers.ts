@@ -6,12 +6,17 @@ const assurePathExists = (path: string): boolean => {
     try {
         fs.readdirSync(path);
         return true;
-    } catch (ex) {
-    }
+    } catch (ex) {}
     return false;
 };
 
-export const deployHandler = async (name: string, path: string, region: string, useIndexAsDefault: boolean, stage: string) => {
+export const deployHandler = async (
+    name: string,
+    path: string,
+    region: string,
+    useIndexAsDefault: boolean,
+    stage: string
+) => {
     try {
         const pathValid = assurePathExists(path);
         if (!pathValid) {
