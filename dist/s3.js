@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -17,7 +18,7 @@ const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const mime_types_1 = __importDefault(require("mime-types"));
 const crypto_1 = __importDefault(require("crypto"));
 let s3;
-exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(this, void 0, void 0, function* () {
+exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region
     });
@@ -26,7 +27,7 @@ exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(this, void 0,
     yield Promise.all(filesToUpload.map(ftu => putFile(ftu, bucketName)));
 });
 // get files to upload with s3 diff
-const getFilesToUpload = (bucketName, folder) => __awaiter(this, void 0, void 0, function* () {
+const getFilesToUpload = (bucketName, folder) => __awaiter(void 0, void 0, void 0, function* () {
     const allFiles = yield getAllFiles(folder, folder);
     const filteredFiles = (yield Promise.all(allFiles.map(f => s3HashNotEquals(f, bucketName).then(ne => ({ f, upload: ne })))))
         .filter(f => f.upload).map(f => f.f);
@@ -34,7 +35,7 @@ const getFilesToUpload = (bucketName, folder) => __awaiter(this, void 0, void 0,
     return filteredFiles;
 });
 // get all recursive files from a given folder
-const getAllFiles = (folder, baseFolder) => __awaiter(this, void 0, void 0, function* () {
+const getAllFiles = (folder, baseFolder) => __awaiter(void 0, void 0, void 0, function* () {
     const files = fs_1.default.readdirSync(folder);
     const fileDirMap = files.map(file => path_1.default.join(folder, file))
         .map(path => ({ path, isDir: fs_1.default.lstatSync(path).isDirectory() }));
@@ -47,7 +48,7 @@ const getAllFiles = (folder, baseFolder) => __awaiter(this, void 0, void 0, func
     return [...subDirFiles, ...directFiles];
 });
 // returns true if the s3 hash is NOT equal and the file should be uploaded
-const s3HashNotEquals = (file, bucketName) => __awaiter(this, void 0, void 0, function* () {
+const s3HashNotEquals = (file, bucketName) => __awaiter(void 0, void 0, void 0, function* () {
     const resp = yield s3.listObjectsV2({
         Bucket: bucketName,
         Prefix: file.s3Key
@@ -65,7 +66,7 @@ const s3HashNotEquals = (file, bucketName) => __awaiter(this, void 0, void 0, fu
     const fileHash = file.hash.toLocaleLowerCase();
     return s3Etag !== fileHash;
 });
-const getFile = (filePath, baseFolder) => __awaiter(this, void 0, void 0, function* () {
+const getFile = (filePath, baseFolder) => __awaiter(void 0, void 0, void 0, function* () {
     const content = fs_1.default.readFileSync(filePath);
     const str = content.toString('utf8');
     const md5 = crypto_1.default.createHash('md5').update(str).digest('hex');
@@ -79,7 +80,7 @@ const getFile = (filePath, baseFolder) => __awaiter(this, void 0, void 0, functi
     };
 });
 const getContentType = (filePath) => mime_types_1.default.lookup(filePath);
-const putFile = (file, bucket) => __awaiter(this, void 0, void 0, function* () {
+const putFile = (file, bucket) => __awaiter(void 0, void 0, void 0, function* () {
     return s3.putObject({
         Bucket: bucket,
         Key: file.s3Key,
@@ -87,7 +88,7 @@ const putFile = (file, bucket) => __awaiter(this, void 0, void 0, function* () {
         ContentType: file.contentType
     }).promise().then(() => { return; });
 });
-const removeOneBatchFromBucket = (bucket) => __awaiter(this, void 0, void 0, function* () {
+const removeOneBatchFromBucket = (bucket) => __awaiter(void 0, void 0, void 0, function* () {
     const resp = yield s3.listObjectsV2({
         Bucket: bucket
     }).promise();
@@ -107,7 +108,7 @@ const removeOneBatchFromBucket = (bucket) => __awaiter(this, void 0, void 0, fun
     }).promise();
     return keys.length;
 });
-exports.removeAllFilesFromBucket = (bucketName, region) => __awaiter(this, void 0, void 0, function* () {
+exports.removeAllFilesFromBucket = (bucketName, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region
     });
