@@ -124,7 +124,7 @@ exports.updateCreateCloudFormation = (name, stage, useIndexAsDefault, region) =>
         const currentTags = yield getTags(stackName);
         if (!currentTemplate)
             throw new Error('No template found');
-        if (currentTemplate != template || currentTags != params.Tags) {
+        if (currentTemplate != template || !util_1.tagsEquals(currentTags, params.Tags)) {
             console.log('Updating stack...');
             yield updateStack(params);
         }
