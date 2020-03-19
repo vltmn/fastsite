@@ -73,8 +73,7 @@ const s3HashNotEquals = async (file: File, bucketName: string): Promise<boolean>
 };
 
 // get files to upload with s3 diff
-const getFilesToUpload = async (bucketName: string, folder: string): Promise<File[]> => {
-    const allFiles = await getAllFiles(folder, folder);
+const getFilesToUpload = async (bucketName: string, folder: string, allFiles: File[]): Promise<File[]> => {
     const filteredFiles = (
         await Promise.all(allFiles.map(f => s3HashNotEquals(f, bucketName).then(ne => ({ f, upload: ne }))))
     )
@@ -97,14 +96,44 @@ const putFile = async (file: File, bucket: string): Promise<void> => {
             return;
         });
 };
+const deleteS3Files = async (keys: string[], bucket: string): Promise<void> => {
+    if (keys.length === 0) {
+        return;
+    }
+    const params = {
+        Bucket: bucket,
+        Delete: {
+            Objects: keys.map(k => ({ Key: k }))
+        }
+    };
+    await s3.deleteObjects(params).promise();
+};
+
+const getFilesToRemove = async (bucketName: string, localFiles: File[]): Promise<string[]> => {
+    const listObjectResponse = await s3.listObjectsV2({ Bucket: bucketName }).promise();
+    if (listObjectResponse.$response.error) {
+        console.error(listObjectResponse.$response.error);
+        throw new Error('S3 threw error');
+    }
+    const allKeys = (listObjectResponse.Contents?.map(obj => obj.Key).filter(key => key !== undefined) ||
+        []) as string[];
+    const notInLocalFiles = allKeys?.filter(key => !localFiles.some(f => f.s3Key === key));
+    console.log(`Removing ${notInLocalFiles.length} old files`);
+    return notInLocalFiles;
+};
 
 export const copyFolderToS3 = async (bucketName: string, folder: string, region: string) => {
     aws.config.update({
         region
     });
     s3 = new aws.S3();
-    const filesToUpload: File[] = await getFilesToUpload(bucketName, folder);
-    await Promise.all(filesToUpload.map(ftu => putFile(ftu, bucketName)));
+    const allFiles = await getAllFiles(folder, folder);
+    const filesToUpload: File[] = await getFilesToUpload(bucketName, folder, allFiles);
+    const s3FilesToRemove: string[] = await getFilesToRemove(bucketName, allFiles);
+    await Promise.all([
+        ...filesToUpload.map(ftu => putFile(ftu, bucketName)),
+        deleteS3Files(s3FilesToRemove, bucketName)
+    ]);
 };
 
 const removeOneBatchFromBucket = async (bucket: string): Promise<number> => {

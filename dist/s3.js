@@ -68,8 +68,7 @@ const s3HashNotEquals = (file, bucketName) => __awaiter(void 0, void 0, void 0, 
     return s3Etag !== fileHash;
 });
 // get files to upload with s3 diff
-const getFilesToUpload = (bucketName, folder) => __awaiter(void 0, void 0, void 0, function* () {
-    const allFiles = yield getAllFiles(folder, folder);
+const getFilesToUpload = (bucketName, folder, allFiles) => __awaiter(void 0, void 0, void 0, function* () {
     const filteredFiles = (yield Promise.all(allFiles.map(f => s3HashNotEquals(f, bucketName).then(ne => ({ f, upload: ne })))))
         .filter(f => f.upload)
         .map(f => f.f);
@@ -89,13 +88,43 @@ const putFile = (file, bucket) => __awaiter(void 0, void 0, void 0, function* ()
         return;
     });
 });
+const deleteS3Files = (keys, bucket) => __awaiter(void 0, void 0, void 0, function* () {
+    if (keys.length === 0) {
+        return;
+    }
+    const params = {
+        Bucket: bucket,
+        Delete: {
+            Objects: keys.map(k => ({ Key: k }))
+        }
+    };
+    yield s3.deleteObjects(params).promise();
+});
+const getFilesToRemove = (bucketName, localFiles) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const listObjectResponse = yield s3.listObjectsV2({ Bucket: bucketName }).promise();
+    if (listObjectResponse.$response.error) {
+        console.error(listObjectResponse.$response.error);
+        throw new Error('S3 threw error');
+    }
+    const allKeys = (((_a = listObjectResponse.Contents) === null || _a === void 0 ? void 0 : _a.map(obj => obj.Key).filter(key => key !== undefined)) ||
+        []);
+    const notInLocalFiles = allKeys === null || allKeys === void 0 ? void 0 : allKeys.filter(key => !localFiles.some(f => f.s3Key === key));
+    console.log(`Removing ${notInLocalFiles.length} old files`);
+    return notInLocalFiles;
+});
 exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region
     });
     s3 = new aws_sdk_1.default.S3();
-    const filesToUpload = yield getFilesToUpload(bucketName, folder);
-    yield Promise.all(filesToUpload.map(ftu => putFile(ftu, bucketName)));
+    const allFiles = yield getAllFiles(folder, folder);
+    const filesToUpload = yield getFilesToUpload(bucketName, folder, allFiles);
+    const s3FilesToRemove = yield getFilesToRemove(bucketName, allFiles);
+    yield Promise.all([
+        ...filesToUpload.map(ftu => putFile(ftu, bucketName)),
+        deleteS3Files(s3FilesToRemove, bucketName)
+    ]);
 });
 const removeOneBatchFromBucket = (bucket) => __awaiter(void 0, void 0, void 0, function* () {
     const resp = yield s3.listObjectsV2({ Bucket: bucket }).promise();
