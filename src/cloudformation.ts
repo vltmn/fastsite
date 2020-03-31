@@ -144,11 +144,8 @@ export const updateCreateCloudFormation = async (
     if (exists) {
         const currentTemplate = await getTemplate(stackName);
         const currentTags = await getTags(stackName);
-        console.log('tags equals', tagsEquals(currentTags, params.Tags));
-        console.log('templates equals', currentTemplate == template);
-        console.log('templates equals (copied)', templatesEquals(currentTemplate || '', template));
         if (!currentTemplate) throw new Error('No template found');
-        if (currentTemplate != template || !tagsEquals(currentTags, params.Tags)) {
+        if (templatesEquals(currentTemplate || '', template) || !tagsEquals(currentTags, params.Tags)) {
             console.log('Updating stack...');
             await updateStack(params);
         }
