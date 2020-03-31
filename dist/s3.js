@@ -17,6 +17,7 @@ const path_1 = __importDefault(require("path"));
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const mime_types_1 = __importDefault(require("mime-types"));
 const crypto_1 = __importDefault(require("crypto"));
+const slash_1 = __importDefault(require("slash"));
 let s3;
 const getContentType = (filePath) => mime_types_1.default.lookup(filePath);
 const getFile = (filePath, baseFolder) => __awaiter(void 0, void 0, void 0, function* () {
@@ -29,7 +30,7 @@ const getFile = (filePath, baseFolder) => __awaiter(void 0, void 0, void 0, func
     const key = filePath.indexOf(baseFolder) == -1 ? filePath : filePath.substring((baseFolder + '/').length);
     const contentType = getContentType(filePath) || 'application/octet-stream';
     return {
-        s3Key: key,
+        s3Key: slash_1.default(key),
         contentType,
         data: content,
         hash: md5
@@ -121,6 +122,7 @@ exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(void 0, void 
     const allFiles = yield getAllFiles(folder, folder);
     const filesToUpload = yield getFilesToUpload(bucketName, folder, allFiles);
     const s3FilesToRemove = yield getFilesToRemove(bucketName, allFiles);
+    console.log(s3FilesToRemove);
     yield Promise.all([
         ...filesToUpload.map(ftu => putFile(ftu, bucketName)),
         deleteS3Files(s3FilesToRemove, bucketName)

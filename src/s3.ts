@@ -3,6 +3,7 @@ import path from 'path';
 import aws, { S3 } from 'aws-sdk';
 import mime from 'mime-types';
 import crypto from 'crypto';
+import slash from 'slash';
 
 let s3: S3;
 
@@ -25,7 +26,7 @@ const getFile = async (filePath: string, baseFolder: string): Promise<File | und
     const key = filePath.indexOf(baseFolder) == -1 ? filePath : filePath.substring((baseFolder + '/').length);
     const contentType = getContentType(filePath) || 'application/octet-stream';
     return {
-        s3Key: key,
+        s3Key: slash(key),
         contentType,
         data: content,
         hash: md5
