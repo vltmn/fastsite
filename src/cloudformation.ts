@@ -2,6 +2,7 @@ import { sleep, tagsEquals } from './util';
 import aws from 'aws-sdk';
 import { getTemplate as getTemplateStr } from './template';
 import { Stack, Tags } from 'aws-sdk/clients/cloudformation';
+import { safeLoad, safeDump } from 'js-yaml';
 
 let cloudFormation: aws.CloudFormation;
 
@@ -144,6 +145,12 @@ export const updateCreateCloudFormation = async (
     if (exists) {
         const currentTemplate = await getTemplate(stackName);
         const currentTags = await getTags(stackName);
+        console.log('tags equals', tagsEquals(currentTags, params.Tags));
+        console.log('templates equals', currentTemplate == template);
+        console.log(
+            'templates equals (copied)',
+            safeDump(safeLoad(currentTemplate || '')) == safeDump(safeLoad(template))
+        );
         if (!currentTemplate) throw new Error('No template found');
         if (currentTemplate != template || !tagsEquals(currentTags, params.Tags)) {
             console.log('Updating stack...');
