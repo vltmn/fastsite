@@ -1,6 +1,6 @@
 {
   "name": "fastsite",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Tool for deploying static websites to AWS, automatically creating an S3 Bucket and Cloudfront deployment",
   "main": "index.js",
   "author": "vltmn <melkerveltman@gmail.com>",
@@ -13,7 +13,8 @@
     "mime-types": "^2.1.24",
     "mustache": "^3.0.1",
     "slash": "^3.0.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.2",
+    "yesno": "^0.3.1"
   },
   "devDependencies": {
     "@types/js-yaml": "^3.12.3",

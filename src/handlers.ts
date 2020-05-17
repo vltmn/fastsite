@@ -15,14 +15,15 @@ export const deployHandler = async (
     path: string,
     region: string,
     useIndexAsDefault: boolean,
-    stage: string
+    stage: string,
+    assumeYes: boolean
 ) => {
     try {
         const pathValid = assurePathExists(path);
         if (!pathValid) {
             throw new Error('The path supplied does not exist or is not readable');
         }
-        const returnVal = await updateCreateCloudFormation(name, stage, useIndexAsDefault, region);
+        const returnVal = await updateCreateCloudFormation(name, stage, useIndexAsDefault, region, assumeYes);
         await copyFolderToS3(returnVal.bucket, path, region);
         console.log('Bucket name: ', returnVal.bucket);
         console.log('Cloudfront domain: ', returnVal.cloudfront);
