@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("./util");
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const template_1 = require("./template");
+const yesno_1 = __importDefault(require("yesno"));
 let cloudFormation;
 exports.buildStackName = (name, stage) => `${name}-${stage}`;
 const buildParams = (name, stage, template) => ({
@@ -110,7 +111,7 @@ exports.getBucketName = (name, stage, region) => __awaiter(void 0, void 0, void 
         throw new Error('Undefined');
     return bucketName;
 });
-exports.updateCreateCloudFormation = (name, stage, useIndexAsDefault, region) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateCreateCloudFormation = (name, stage, useIndexAsDefault, region, assumeYes) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
         region: region
     });
@@ -125,11 +126,27 @@ exports.updateCreateCloudFormation = (name, stage, useIndexAsDefault, region) =>
         if (!currentTemplate)
             throw new Error('No template found');
         if (!template_1.templatesEquals(currentTemplate || '', template) || !util_1.tagsEquals(currentTags, params.Tags)) {
+            if (!assumeYes) {
+                const resp = yield yesno_1.default({
+                    question: 'The cloudformation stack will be updated. Do you want to continue?'
+                });
+                if (!resp) {
+                    throw new Error('Operation cancelled');
+                }
+            }
             console.log('Updating stack...');
             yield updateStack(params);
         }
     }
     else {
+        if (!assumeYes) {
+            const resp = yield yesno_1.default({
+                question: 'A new deployment will be created. Do you want to continue?'
+            });
+            if (!resp) {
+                throw new Error('Operation cancelled');
+            }
+        }
         console.debug('Creating the cloudformation stack, this might take up to 15 minutes...');
         yield createStack(params);
     }

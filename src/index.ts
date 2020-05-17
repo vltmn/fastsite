@@ -42,10 +42,16 @@ yargs
                 requiresArg: true,
                 type: 'string',
                 nargs: 1
+            },
+            assumeYes: {
+                describe: 'Assume yes to create or update a deployment that does not already exist',
+                default: false,
+                alias: 'y',
+                type: 'boolean'
             }
         },
         argv => {
-            deployHandler(argv.name, argv.path, argv.region, argv.defaultIndex, argv.stage);
+            deployHandler(argv.name, argv.path, argv.region, argv.defaultIndex, argv.stage, argv.assumeYes);
         }
     )
     .help()

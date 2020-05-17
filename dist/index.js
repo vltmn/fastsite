@@ -42,9 +42,15 @@ yargs_1.default
         requiresArg: true,
         type: 'string',
         nargs: 1
+    },
+    assumeYes: {
+        describe: 'Assume yes to create or update a deployment that does not already exist',
+        default: false,
+        alias: 'y',
+        type: 'boolean'
     }
 }, argv => {
-    handlers_1.deployHandler(argv.name, argv.path, argv.region, argv.defaultIndex, argv.stage);
+    handlers_1.deployHandler(argv.name, argv.path, argv.region, argv.defaultIndex, argv.stage, argv.assumeYes);
 })
     .help()
     .command('remove', 'Remove a project deployed using this from AWS, removes all files from S3 and removes all created resources.', {

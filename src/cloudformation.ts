@@ -2,6 +2,7 @@ import { sleep, tagsEquals } from './util';
 import aws from 'aws-sdk';
 import { getTemplate as getTemplateStr, templatesEquals } from './template';
 import { Stack, Tags } from 'aws-sdk/clients/cloudformation';
+import yesno from 'yesno';
 
 let cloudFormation: aws.CloudFormation;
 
@@ -131,7 +132,8 @@ export const updateCreateCloudFormation = async (
     name: string,
     stage: string,
     useIndexAsDefault: boolean,
-    region: string
+    region: string,
+    assumeYes: boolean
 ): Promise<{ bucket: string; cloudfront: string }> => {
     aws.config.update({
         region: region
@@ -146,10 +148,26 @@ export const updateCreateCloudFormation = async (
         const currentTags = await getTags(stackName);
         if (!currentTemplate) throw new Error('No template found');
         if (!templatesEquals(currentTemplate || '', template) || !tagsEquals(currentTags, params.Tags)) {
+            if (!assumeYes) {
+                const resp = await yesno({
+                    question: 'The cloudformation stack will be updated. Do you want to continue?'
+                });
+                if (!resp) {
+                    throw new Error('Operation cancelled');
+                }
+            }
             console.log('Updating stack...');
             await updateStack(params);
         }
     } else {
+        if (!assumeYes) {
+            const resp = await yesno({
+                question: 'A new deployment will be created. Do you want to continue?'
+            });
+            if (!resp) {
+                throw new Error('Operation cancelled');
+            }
+        }
         console.debug('Creating the cloudformation stack, this might take up to 15 minutes...');
         await createStack(params);
     }
