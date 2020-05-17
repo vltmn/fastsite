@@ -122,7 +122,6 @@ exports.copyFolderToS3 = (bucketName, folder, region) => __awaiter(void 0, void 
     const allFiles = yield getAllFiles(folder, folder);
     const filesToUpload = yield getFilesToUpload(bucketName, folder, allFiles);
     const s3FilesToRemove = yield getFilesToRemove(bucketName, allFiles);
-    console.log(s3FilesToRemove);
     yield Promise.all([
         ...filesToUpload.map(ftu => putFile(ftu, bucketName)),
         deleteS3Files(s3FilesToRemove, bucketName)

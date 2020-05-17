@@ -23,13 +23,13 @@ const assurePathExists = (path) => {
     catch (ex) { }
     return false;
 };
-exports.deployHandler = (name, path, region, useIndexAsDefault, stage) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deployHandler = (name, path, region, useIndexAsDefault, stage, assumeYes) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const pathValid = assurePathExists(path);
         if (!pathValid) {
             throw new Error('The path supplied does not exist or is not readable');
         }
-        const returnVal = yield cloudformation_1.updateCreateCloudFormation(name, stage, useIndexAsDefault, region);
+        const returnVal = yield cloudformation_1.updateCreateCloudFormation(name, stage, useIndexAsDefault, region, assumeYes);
         yield s3_1.copyFolderToS3(returnVal.bucket, path, region);
         console.log('Bucket name: ', returnVal.bucket);
         console.log('Cloudfront domain: ', returnVal.cloudfront);
