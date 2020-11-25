@@ -86,17 +86,28 @@ const waitForCloudFormation = async (stackName: string): Promise<void> => {
 };
 
 const stackExists = (stackName: string): Promise<boolean> =>
-    cloudFormation
-        .listStacks({})
-        .promise()
+    listStacksRecurse()
         .then(
             stacks =>
-                stacks.StackSummaries &&
-                stacks.StackSummaries.filter(ss => ss.StackName === stackName).filter(
+                stacks.filter(ss => ss.StackName === stackName).filter(
                     ss => ss.StackStatus !== 'DELETE_COMPLETE'
                 ).length > 0
         )
         .then(res => !!res);
+
+const listStacksRecurse = (nextToken?: string): Promise<aws.CloudFormation.StackSummary[]> => {
+    return cloudFormation.listStacks({ NextToken: nextToken }).promise().then(res => {
+        const summaries = res.StackSummaries ? res.StackSummaries.map(s => s) : [];
+        if (res.NextToken) {
+            return listStacksRecurse(res.NextToken).then(nested => {
+                return [...summaries, ...nested];
+            });
+        } else {
+            return summaries;
+        }
+    });
+}
+
 
 export const removeCloudFormation = async (name: string, stage: string, region: string): Promise<void> => {
     aws.config.update({
