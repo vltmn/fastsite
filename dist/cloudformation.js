@@ -77,11 +77,25 @@ const waitForCloudFormation = (stackName) => __awaiter(void 0, void 0, void 0, f
             throw new Error('Resp was undefined');
     }
 });
-const stackExists = (stackName) => cloudFormation
-    .listStacks({})
-    .promise()
-    .then(stacks => stacks.StackSummaries &&
-    stacks.StackSummaries.filter(ss => ss.StackName === stackName).filter(ss => ss.StackStatus !== 'DELETE_COMPLETE').length > 0)
+const listStacksRecurse = (nextToken) => {
+    return cloudFormation
+        .listStacks({ NextToken: nextToken })
+        .promise()
+        .then(res => {
+        const summaries = res.StackSummaries ? res.StackSummaries.map(s => s) : [];
+        if (res.NextToken) {
+            return listStacksRecurse(res.NextToken).then(nested => {
+                return [...summaries, ...nested];
+            });
+        }
+        else {
+            return summaries;
+        }
+    });
+};
+const stackExists = (stackName) => listStacksRecurse()
+    .then(stacks => stacks.filter(ss => ss.StackName === stackName).filter(ss => ss.StackStatus !== 'DELETE_COMPLETE')
+    .length > 0)
     .then(res => !!res);
 exports.removeCloudFormation = (name, stage, region) => __awaiter(void 0, void 0, void 0, function* () {
     aws_sdk_1.default.config.update({
