@@ -3,32 +3,28 @@ Resources:
   WebDistribution:
     DependsOn: 
     - WebBucket
+    - WebDistributionOriginAccessControl
     Type: AWS::CloudFront::Distribution
     Properties: 
       DistributionConfig:
         Enabled: true
         Origins:
-        - DomainName: !Select [2, !Split ["/", !GetAtt WebBucket.WebsiteURL]]
-          Id: S3Origin
-          CustomOriginConfig:
-            HTTPPort: '80'
-            HTTPSPort: '443'
-            OriginProtocolPolicy: http-only
+        - Id: S3Origin
+          DomainName: !GetAtt WebBucket.RegionalDomainName
+          OriginAccessControlId: !GetAtt WebDistributionOriginAccessControl.Id
+          S3OriginConfig: {}
         DefaultRootObject: index.html
         PriceClass: PriceClass_100
         CacheBehaviors:
-          - DefaultTTL: 0
-            MaxTTL: 0
-            MinTTL: 0
-            PathPattern: index.html
+          - PathPattern: index.html
             TargetOriginId: S3Origin
             ViewerProtocolPolicy: redirect-to-https
-            ForwardedValues:
-              QueryString: 'false'
+            # Caching disabled cache policy ID
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
-          ForwardedValues:
-            QueryString: 'false'
+          # Caching Optimized cache policy ID
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
           ViewerProtocolPolicy: redirect-to-https
 {{#defaultIndex}}
         CustomErrorResponses:
@@ -37,24 +33,38 @@ Resources:
             ResponseCode: '200'
 {{/defaultIndex}}
 
+  WebDistributionOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: fastsite-access-control
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
   WebBucket:
     Type: AWS::S3::Bucket
     Properties:
-      AccessControl: PublicRead
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
+      AccessControl: Private
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       PolicyDocument:
-        Id: PublicRead
         Version: 2012-10-17
         Statement:
-          - Sid: PublicReadForGetBucketObjects
+          - Sid: AllowCloudFrontServicePrincipal
             Effect: Allow
-            Principal: '*'
+            Principal: 
+              Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
+            Condition: 
+              StringEquals: 
+                "AWS:SourceArn": !Join 
+                  - ""
+                  - - "arn:aws:cloudfront::"
+                    - !Ref AWS::AccountId
+                    - ":distribution/"
+                    - !Ref WebDistribution
             Resource: !Join 
               - ''
               - - 'arn:aws:s3:::'
