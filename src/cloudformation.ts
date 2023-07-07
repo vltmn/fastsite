@@ -172,14 +172,15 @@ export const updateCreateCloudFormation = async (
             await updateStack(params);
         }
     } else {
-        if (!assumeYes) {
-            const resp = await yesno({
-                question: 'A new deployment will be created. Do you want to continue?'
-            });
-            if (!resp) {
-                throw new Error('Operation cancelled');
-            }
+        // Temporary don't allow assumeYes for creation.
+        //if (!assumeYes) {
+        const resp = await yesno({
+            question: 'A new deployment will be created. Do you want to continue?'
+        });
+        if (!resp) {
+            throw new Error('Operation cancelled');
         }
+        //}
         console.debug('Creating the cloudformation stack, this might take up to 15 minutes...');
         await createStack(params);
     }
